@@ -1,7 +1,7 @@
 // src/components/TechStack.tsx
 import React from 'react';
 import { FaReact, FaDocker, FaAws } from 'react-icons/fa';
-import { SiNodedotjs, SiGo, SiMongodb, SiAwslambda } from 'react-icons/si';
+import { SiGo, SiMongodb, SiAwslambda } from 'react-icons/si';
 
 const TechStack: React.FC = () => {
   return (
