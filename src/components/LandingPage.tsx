@@ -1,5 +1,6 @@
 import React from "react";
 import { FaCompress } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const LandingPage: React.FC = () => {
   return (
@@ -17,12 +18,12 @@ const LandingPage: React.FC = () => {
               minimal loss. Boost your website's performance and save storage
               space effortlessly.
             </p>
-            <a
-              href="process-image"
+            <Link
+              to="process-image"
               className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-300"
             >
               Get Started
-            </a>
+            </Link>
           </div>
           <div className="mt-6 md:mt-0">
             <FaCompress className="text-6xl text-green-600 mx-auto" />
