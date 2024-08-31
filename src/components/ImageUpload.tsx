@@ -2,39 +2,29 @@ import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { FaUpload, FaSpinner, FaImage } from "react-icons/fa";
 import { sendImageToCloudinary } from "../services/api";
+import WebSocketComponent from "./WebSocket";
 
 const ImageUpload: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
-  const [showImage, setShowImage] = useState<boolean>(false);
   const [uploadComplete, setUploadComplete] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string>("none");
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
-  // State for additional options
   const [cropOptions, setCropOptions] = useState({ width: 0, height: 0 });
-  const [resizeOptions, setResizeOptions] = useState({ width: 0, height: 0 });
   const [filter, setFilter] = useState<string>("none");
 
   const mutation = useMutation({
     mutationFn: sendImageToCloudinary,
     onSuccess: (data) => {
-      setResult({
-        message: data.status,
-        imageUrl: data.image_url,
-      });
+      console.log("Mutation Data", data);
+      setUploadedImageUrl(data.image_url); // Assuming the URL is in data.data.url
       setUploadComplete(true);
     },
     onError: () => {
-      setResult({
-        message: "An error occurred while uploading the image.",
-      });
+      console.error("An error occurred while uploading the image.");
     },
   });
-
-  const [result, setResult] = useState<{
-    message: string;
-    imageUrl?: string;
-  } | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -61,12 +51,10 @@ const ImageUpload: React.FC = () => {
 
   const handleCropChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setCropOptions((prev) => ({ ...prev, [name]: Number(value) }));
-  };
-
-  const handleResizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setResizeOptions((prev) => ({ ...prev, [name]: Number(value) }));
+    setCropOptions((prev) => ({
+      ...prev,
+      [name]: value === "" ? "" : Number(value),
+    }));
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -86,11 +74,6 @@ const ImageUpload: React.FC = () => {
       formData.append("cropHeight", cropOptions.height.toString());
     }
 
-    if (selectedOption === "resize") {
-      formData.append("resizeWidth", resizeOptions.width.toString());
-      formData.append("resizeHeight", resizeOptions.height.toString());
-    }
-
     if (selectedOption === "filter") {
       formData.append("filter", filter);
     }
@@ -106,7 +89,7 @@ const ImageUpload: React.FC = () => {
       </div>
 
       {/* Upload Form */}
-      <div className="relative max-w-md w-full px-12 py-16 bg-white rounded-lg border">
+      <div className="relative max-w-2xl w-full px-12 py-16 bg-white">
         {!uploadComplete && (
           <>
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-700">
@@ -144,32 +127,12 @@ const ImageUpload: React.FC = () => {
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      value="none"
-                      checked={selectedOption === "none"}
-                      onChange={handleOptionChange}
-                      className="mr-2"
-                    />
-                    None
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
                       value="crop"
                       checked={selectedOption === "crop"}
                       onChange={handleOptionChange}
                       className="mr-2"
                     />
                     Crop
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="resize"
-                      checked={selectedOption === "resize"}
-                      onChange={handleOptionChange}
-                      className="mr-2"
-                    />
-                    Resize
                   </label>
                   <label className="flex items-center">
                     <input
@@ -194,7 +157,7 @@ const ImageUpload: React.FC = () => {
                     <input
                       type="number"
                       name="width"
-                      value={cropOptions.width}
+                      value={cropOptions.width || ""}
                       onChange={handleCropChange}
                       placeholder="Width"
                       className="w-full px-3 py-2 border rounded-lg"
@@ -202,34 +165,8 @@ const ImageUpload: React.FC = () => {
                     <input
                       type="number"
                       name="height"
-                      value={cropOptions.height}
+                      value={cropOptions.height || ""}
                       onChange={handleCropChange}
-                      placeholder="Height"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedOption === "resize" && (
-                <div className="mt-4 w-full">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">
-                    Resize Dimensions:
-                  </label>
-                  <div className="flex space-x-4">
-                    <input
-                      type="number"
-                      name="width"
-                      value={resizeOptions.width}
-                      onChange={handleResizeChange}
-                      placeholder="Width"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                    <input
-                      type="number"
-                      name="height"
-                      value={resizeOptions.height}
-                      onChange={handleResizeChange}
                       placeholder="Height"
                       className="w-full px-3 py-2 border rounded-lg"
                     />
@@ -247,7 +184,6 @@ const ImageUpload: React.FC = () => {
                     onChange={handleFilterChange}
                     className="w-full px-3 py-2 border rounded-lg"
                   >
-                    <option value="none">None</option>
                     <option value="grayscale">Grayscale</option>
                     <option value="sepia">Sepia</option>
                     <option value="invert">Invert</option>
@@ -257,9 +193,7 @@ const ImageUpload: React.FC = () => {
 
               <button
                 type="submit"
-                className="mt-4 px-8 py-2 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-700 transition duration-
-
-300"
+                className="mt-4 px-8 py-2 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-700 transition duration-300"
                 disabled={mutation.isPending}
               >
                 {mutation.isPending ? (
@@ -274,25 +208,19 @@ const ImageUpload: React.FC = () => {
             </form>
           </>
         )}
-        {result && !showImage && (
-          <div className="mt-4 text-center">
-            <p className="text-gray-700">{result.message}</p>
-            <a
-              href="#"
-              onClick={() => setShowImage(true)}
-              className="text-green-500 underline hover:text-green-600"
-            >
-              View Image
-            </a>
-          </div>
-        )}
-        {result && showImage && result.imageUrl && (
-          <div className="mt-4 text-center">
-            <img
-              src={result.imageUrl}
-              alt="Uploaded"
-              className="max-w-full rounded-lg shadow-md"
-            />
+
+        {uploadComplete && (
+          <div className="flex flex-col items-center justify-center">
+            <WebSocketComponent url="ws://localhost:8080/websocket" />
+            {uploadedImageUrl && (
+              <div className="mt-6">
+                <img
+                  src={uploadedImageUrl}
+                  alt="Uploaded"
+                  className="max-w-full max-h-64 object-contain rounded-lg border"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

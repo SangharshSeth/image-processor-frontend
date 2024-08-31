@@ -7,13 +7,12 @@ const LandingPage: React.FC = () => {
     <div className="antialiased bg-white font-inter min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-5xl font-bold leading-tight mb-6">
-          Compress Your Images with{" "}
-          <span className="text-green-600">Ease</span>
+          Compress Your Images with <span className="text-green-600">Ease</span>
         </h1>
         <p className="text-lg mb-8 max-w-2xl mx-auto">
-          Our powerful tool ensures high-quality image compression with
-          minimal loss. Boost your website's performance and save storage
-          space effortlessly.
+          Our powerful tool ensures high-quality image compression with minimal
+          loss. Boost your website's performance and save storage space
+          effortlessly.
         </p>
         <div className="space-x-4 mb-12">
           <Link
